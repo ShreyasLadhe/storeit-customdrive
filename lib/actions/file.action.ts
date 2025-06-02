@@ -67,6 +67,8 @@ const createQueries = (
   searchText: string,
   sort: string,
   limit?: number,
+  startDate?: string,
+  endDate?: string,
 ) => {
   const queries = [
     Query.or([
@@ -78,6 +80,17 @@ const createQueries = (
   if (types.length > 0) queries.push(Query.equal("type", types));
   if (searchText) queries.push(Query.contains("name", searchText));
   if (limit) queries.push(Query.limit(limit));
+
+  // Add date range filters
+  if (startDate) {
+    queries.push(Query.greaterThanEqual("$createdAt", startDate));
+  }
+  if (endDate) {
+    // Add one day to endDate to include the entire end date
+    const endDateObj = new Date(endDate);
+    endDateObj.setDate(endDateObj.getDate() + 1);
+    queries.push(Query.lessThanEqual("$createdAt", endDateObj.toISOString()));
+  }
 
   if (sort) {
     const [sortBy, orderBy] = sort.split("-");
@@ -95,6 +108,8 @@ export const getFiles = async ({
   searchText = "",
   sort = "$createdAt-desc",
   limit,
+  startDate,
+  endDate,
 }: GetFilesProps) => {
   const { databases } = await createAdminClient();
 
@@ -103,7 +118,7 @@ export const getFiles = async ({
 
     if (!currentUser) throw new Error("User not found");
 
-    const queries = createQueries(currentUser, types, searchText, sort, limit);
+    const queries = createQueries(currentUser, types, searchText, sort, limit, startDate, endDate);
 
     const files = await databases.listDocuments(
       appwriteConfig.databaseId,

@@ -254,6 +254,28 @@
     @apply mt-5 flex items-center sm:mt-0 sm:gap-3 !important;
   }
 
+  /* Date Filter */
+  .date-filter {
+    @apply flex flex-col gap-4 sm:flex-row sm:items-end !important;
+  }
+  .date-filter-input {
+    @apply w-full min-w-[200px] rounded-lg border border-light-300 bg-white px-4 py-2 pr-10 text-dark-200 focus:border-brand focus:ring-2 focus:ring-brand/30 transition-all !important;
+    font-size: 15px;
+    height: 44px;
+  }
+  .date-filter input[type="date"]::-webkit-calendar-picker-indicator {
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    position: absolute;
+    right: 0;
+    top: 0;
+  }
+  .date-filter label {
+    @apply text-light-100 body-2 mb-1;
+  }
+
   /* ActionsDropdown */
   .rename-input-field {
     @apply body-2 shad-no-focus h-[52px] w-full rounded-full border px-4 shadow-drop-1 !important;
