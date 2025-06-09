@@ -29,7 +29,7 @@ import {
   updateFileUsers,
   updateFileDetails,
 } from "@/lib/actions/file.action";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { FileDetails, ShareInput } from "@/components/ActionsModalContent";
 import TagInput from "@/components/TagInput";
 
@@ -43,6 +43,7 @@ const ActionDropdown = ({ file }: { file: Models.Document }) => {
   const [emails, setEmails] = useState<string[]>([]);
 
   const path = usePathname();
+  const router = useRouter();
 
   const closeAllModals = () => {
     setIsModalOpen(false);
@@ -75,7 +76,10 @@ const ActionDropdown = ({ file }: { file: Models.Document }) => {
 
     success = await actions[action.value as keyof typeof actions]();
 
-    if (success) closeAllModals();
+    if (success) {
+      closeAllModals();
+      router.refresh();
+    }
 
     setIsLoading(false);
   };
