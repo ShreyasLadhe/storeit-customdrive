@@ -10,7 +10,7 @@ import Thumbnail from "@/components/Thumbnail";
 import { MAX_FILE_SIZE } from "@/constants";
 import { useToast } from "@/hooks/use-toast";
 import { uploadFile } from "@/lib/actions/file.action";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import PostUploadActionsModal from "@/components/PostUploadActionsModal";
 
@@ -22,7 +22,6 @@ interface Props {
 
 const FileUploader = ({ ownerId, accountId, className }: Props) => {
   const path = usePathname();
-  const router = useRouter();
   const { toast } = useToast();
   const [files, setFiles] = useState<File[]>([]);
   const [showPostUploadModal, setShowPostUploadModal] = useState(false);
