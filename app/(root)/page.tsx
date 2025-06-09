@@ -99,7 +99,7 @@ const Dashboard = async () => {
                         ))}
                       </div>
                     )}
-                    <ActionDropdown file={file} />
+                  <ActionDropdown file={file} />
                   </div>
                 </div>
               </Link>

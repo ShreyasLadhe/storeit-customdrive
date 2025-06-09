@@ -1,7 +1,9 @@
-import React, { useState, KeyboardEvent } from "react";
+import React, { useState, KeyboardEvent, useEffect } from "react";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge"; // Assuming you have a Badge component or will create one
+import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { getAllTags } from "@/lib/actions/file.action";
 
 interface TagInputProps {
   initialTags?: string[];
@@ -12,6 +14,16 @@ interface TagInputProps {
 const TagInput: React.FC<TagInputProps> = ({ initialTags = [], onTagsChange, placeholder = "Add tags..." }) => {
   const [inputValue, setInputValue] = useState("");
   const [tags, setTags] = useState<string[]>(initialTags);
+  const [availableTags, setAvailableTags] = useState<string[]>([]);
+  const [selectedSelectValue, setSelectedSelectValue] = useState<string>("");
+
+  useEffect(() => {
+    const fetchTags = async () => {
+      const tags = await getAllTags();
+      setAvailableTags(tags);
+    };
+    fetchTags();
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
@@ -36,17 +48,42 @@ const TagInput: React.FC<TagInputProps> = ({ initialTags = [], onTagsChange, pla
     onTagsChange(updatedTags);
   };
 
+  const handleSelectTag = (tag: string) => {
+    if (!tags.includes(tag)) {
+      const updatedTags = [...tags, tag];
+      setTags(updatedTags);
+      onTagsChange(updatedTags);
+    }
+    setSelectedSelectValue("");
+  };
+
   return (
-    <div className="flex flex-col gap-2">
-      <Input
-        type="text"
-        placeholder={placeholder}
-        value={inputValue}
-        onChange={handleInputChange}
-        onKeyDown={handleInputKeyDown}
-        className="w-full"
-      />
-      <div className="flex flex-wrap gap-2">
+    <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-2">
+        <Input
+          type="text"
+          placeholder="Enter tags (press Enter)"
+          value={inputValue}
+          onChange={handleInputChange}
+          onKeyDown={handleInputKeyDown}
+          className="flex-1"
+        />
+        <Select onValueChange={handleSelectTag} value={selectedSelectValue}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Select tag" />
+          </SelectTrigger>
+          <SelectContent>
+            {availableTags
+              .filter(tag => !tags.includes(tag))
+              .map((tag) => (
+                <SelectItem key={tag} value={tag}>
+                  {tag}
+                </SelectItem>
+              ))}
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="flex flex-wrap gap-2 justify-center">
         {tags.map((tag) => (
           <Badge
             key={tag}
