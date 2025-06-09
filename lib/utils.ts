@@ -233,3 +233,22 @@ export const getFileTypesParams = (type: string) => {
       return ["document"];
   }
 };
+
+export const parseSearchQuery = (queryString: string) => {
+  const terms = queryString.split(" ").filter(term => term !== "");
+  const tags: string[] = [];
+  const searchTextParts: string[] = [];
+
+  terms.forEach(term => {
+    if (term.startsWith("#")) {
+      tags.push(term.substring(1));
+    } else {
+      searchTextParts.push(term);
+    }
+  });
+
+  return {
+    searchText: searchTextParts.join(" "),
+    tags: tags,
+  };
+};

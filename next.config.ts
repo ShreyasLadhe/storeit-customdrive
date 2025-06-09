@@ -26,6 +26,14 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "**.cloud.appwrite.io",
       },
+      {
+        protocol: "https",
+        hostname: "cdn.jsdelivr.net",
+      },
+      {
+        protocol: "https",
+        hostname: "ts3.mm.bing.net",
+      },
     ],
   },
 };

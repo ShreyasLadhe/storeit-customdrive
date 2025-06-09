@@ -32,6 +32,18 @@ const Card = ({ file }: { file: Models.Document }) => {
         <p className="caption line-clamp-1 text-light-200">
           By: {file.owner.fullName}
         </p>
+        {file.tags && file.tags.length > 0 && (
+          <div className="flex flex-wrap gap-2 mt-2">
+            {file.tags.map((tag: string) => (
+              <span
+                key={tag}
+                className="px-3 py-1 text-xs bg-brand-100 text-white rounded-full font-medium"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
     </Link>
   );

@@ -13,11 +13,56 @@ const handleError = (error: unknown, message: string) => {
   throw error;
 };
 
+declare interface UploadFileProps {
+  file: File;
+  ownerId: string;
+  accountId: string;
+  path: string;
+  tags?: string[];
+}
+
+declare interface UpdateFileDetailsProps {
+  fileId: string;
+  name: string;
+  tags: string[];
+  path: string;
+}
+
+declare interface GetFilesProps {
+  types: FileType[];
+  searchText?: string;
+  sort?: string;
+  limit?: number;
+  startDate?: string;
+  endDate?: string;
+  tags?: string[];
+}
+
+declare interface RenameFileProps {
+  fileId: string;
+  name: string;
+  extension: string;
+  path: string;
+}
+
+declare interface UpdateFileUsersProps {
+  fileId: string;
+  emails: string[];
+  path: string;
+}
+
+declare interface DeleteFileProps {
+  fileId: string;
+  bucketFileId: string;
+  path: string;
+}
+
 export const uploadFile = async ({
   file,
   ownerId,
   accountId,
   path,
+  tags = [],
 }: UploadFileProps) => {
   const { storage, databases } = await createAdminClient();
 
@@ -40,6 +85,7 @@ export const uploadFile = async ({
       accountId,
       users: [],
       bucketFileId: bucketFile.$id,
+      tags: tags,
     };
 
     const newFile = await databases
@@ -69,6 +115,7 @@ const createQueries = (
   limit?: number,
   startDate?: string,
   endDate?: string,
+  tags?: string[],
 ) => {
   const queries = [
     Query.or([
@@ -79,6 +126,7 @@ const createQueries = (
 
   if (types.length > 0) queries.push(Query.equal("type", types));
   if (searchText) queries.push(Query.contains("name", searchText));
+  if (tags && tags.length > 0) queries.push(Query.contains("tags", tags));
   if (limit) queries.push(Query.limit(limit));
 
   // Add date range filters
@@ -110,6 +158,7 @@ export const getFiles = async ({
   limit,
   startDate,
   endDate,
+  tags = [],
 }: GetFilesProps) => {
   const { databases } = await createAdminClient();
 
@@ -118,7 +167,7 @@ export const getFiles = async ({
 
     if (!currentUser) throw new Error("User not found");
 
-    const queries = createQueries(currentUser, types, searchText, sort, limit, startDate, endDate);
+    const queries = createQueries(currentUser, types, searchText, sort, limit, startDate, endDate, tags);
 
     const files = await databases.listDocuments(
       appwriteConfig.databaseId,
@@ -208,6 +257,32 @@ export const deleteFile = async ({
   }
 };
 
+export const updateFileDetails = async ({
+  fileId,
+  name,
+  tags,
+  path,
+}: UpdateFileDetailsProps) => {
+  const { databases } = await createAdminClient();
+
+  try {
+    const updatedFile = await databases.updateDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.filesCollecionId,
+      fileId,
+      {
+        name: name,
+        tags: tags,
+      },
+    );
+
+    revalidatePath(path);
+    return parseStringify(updatedFile);
+  } catch (error) {
+    handleError(error, "Failed to update file details");
+  }
+};
+
 // ============================== TOTAL FILE SPACE USED
 export async function getTotalSpaceUsed() {
   try {
@@ -249,3 +324,27 @@ export async function getTotalSpaceUsed() {
     handleError(error, "Error calculating total space used:, ");
   }
 }
+
+export const getAllTags = async () => {
+  const { databases } = await createAdminClient();
+
+  try {
+    const files = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.filesCollecionId,
+      [Query.select(["tags"]), Query.limit(5000)] // Fetch all tags, limiting to 5000 documents for now
+    );
+
+    const allTags = new Set<string>();
+    files.documents.forEach((file) => {
+      if (file.tags && Array.isArray(file.tags)) {
+        file.tags.forEach((tag: string) => allTags.add(tag));
+      }
+    });
+
+    return Array.from(allTags);
+  } catch (error) {
+    handleError(error, "Failed to get all tags");
+    return [];
+  }
+};

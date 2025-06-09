@@ -27,15 +27,18 @@ import {
   deleteFile,
   renameFile,
   updateFileUsers,
+  updateFileDetails,
 } from "@/lib/actions/file.action";
 import { usePathname } from "next/navigation";
 import { FileDetails, ShareInput } from "@/components/ActionsModalContent";
+import TagInput from "@/components/TagInput";
 
 const ActionDropdown = ({ file }: { file: Models.Document }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [action, setAction] = useState<ActionType | null>(null);
   const [name, setName] = useState(file.name);
+  const [tags, setTags] = useState<string[]>(file.tags || []);
   const [isLoading, setIsLoading] = useState(false);
   const [emails, setEmails] = useState<string[]>([]);
 
@@ -46,6 +49,7 @@ const ActionDropdown = ({ file }: { file: Models.Document }) => {
     setIsDropdownOpen(false);
     setAction(null);
     setName(file.name);
+    setTags(file.tags || []);
     //   setEmails([]);
   };
 
@@ -60,6 +64,13 @@ const ActionDropdown = ({ file }: { file: Models.Document }) => {
       share: () => updateFileUsers({ fileId: file.$id, emails, path }),
       delete: () =>
         deleteFile({ fileId: file.$id, bucketFileId: file.bucketFileId, path }),
+      "edit-tags": () =>
+        updateFileDetails({
+          fileId: file.$id,
+          name: file.name,
+          tags: tags,
+          path,
+        }),
     };
 
     success = await actions[action.value as keyof typeof actions]();
@@ -100,6 +111,13 @@ const ActionDropdown = ({ file }: { file: Models.Document }) => {
               onChange={(e) => setName(e.target.value)}
             />
           )}
+          {value === "edit-tags" && (
+            <TagInput
+              initialTags={tags}
+              onTagsChange={setTags}
+              placeholder="Enter tags (press Enter to add)"
+            />
+          )}
           {value === "details" && <FileDetails file={file} />}
           {value === "share" && (
             <ShareInput
@@ -115,7 +133,7 @@ const ActionDropdown = ({ file }: { file: Models.Document }) => {
             </p>
           )}
         </DialogHeader>
-        {["rename", "delete", "share"].includes(value) && (
+        {["rename", "delete", "share", "edit-tags"].includes(value) && (
           <DialogFooter className="flex flex-col gap-3 md:flex-row">
             <Button onClick={closeAllModals} className="modal-cancel-button">
               Cancel
@@ -162,7 +180,7 @@ const ActionDropdown = ({ file }: { file: Models.Document }) => {
                 setAction(actionItem);
 
                 if (
-                  ["rename", "share", "delete", "details"].includes(
+                  ["rename", "share", "delete", "details", "edit-tags"].includes(
                     actionItem.value,
                   )
                 ) {

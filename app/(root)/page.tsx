@@ -77,7 +77,7 @@ const Dashboard = async () => {
                   url={file.url}
                 />
 
-                <div className="recent-file-details">
+                <div className="recent-file-details flex justify-between items-start">
                   <div className="flex flex-col gap-1">
                     <p className="recent-file-name">{file.name}</p>
                     <FormattedDateTime
@@ -85,7 +85,22 @@ const Dashboard = async () => {
                       className="caption"
                     />
                   </div>
-                  <ActionDropdown file={file} />
+
+                  <div className="flex items-center gap-2">
+                    {file.tags && file.tags.length > 0 && (
+                      <div className="flex flex-wrap justify-end gap-2">
+                        {file.tags.map((tag: string) => (
+                          <span
+                            key={tag}
+                            className="px-3 py-1 text-xs bg-brand-100/20 text-brand-100 rounded-full font-medium"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    <ActionDropdown file={file} />
+                  </div>
                 </div>
               </Link>
             ))}

@@ -5,6 +5,7 @@ import { getFiles, getTotalSpaceUsed } from "@/lib/actions/file.action";
 import { Models } from "node-appwrite";
 import Card from "@/components/Card";
 import { getFileTypesParams } from "@/lib/utils";
+import TagFilter from "@/components/TagFilter";
 
 const Page = async ({ searchParams, params }: SearchParamProps) => {
   const type = ((await params)?.type as string) || "";
@@ -12,11 +13,19 @@ const Page = async ({ searchParams, params }: SearchParamProps) => {
   const sort = ((await searchParams)?.sort as string) || "";
   const startDate = ((await searchParams)?.startDate as string) || "";
   const endDate = ((await searchParams)?.endDate as string) || "";
+  const filterTags = ((await searchParams)?.filterTags as string) || "";
 
   const types = getFileTypesParams(type) as FileType[];
   const [files, totalSpace] = await Promise.all([
-    getFiles({ types, searchText, sort, startDate, endDate }),
-    getTotalSpaceUsed()
+    getFiles({
+      types,
+      searchText,
+      sort,
+      startDate,
+      endDate,
+      tags: filterTags.split(",").filter((tag) => tag !== ""),
+    }),
+    getTotalSpaceUsed(),
   ]);
 
   // Use the first type if available, otherwise fallback to 'other'
@@ -39,6 +48,7 @@ const Page = async ({ searchParams, params }: SearchParamProps) => {
         {/* Align DateFilter and Sort on the same row */}
         <div className="filter-sort-row mt-4 flex w-full flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <DateFilter />
+          <TagFilter />
           <div className="sort-container">
             <p className="body-1 hidden text-light-200 sm:block">Sort by:</p>
             <Sort />

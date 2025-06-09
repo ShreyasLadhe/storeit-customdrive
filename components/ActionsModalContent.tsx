@@ -33,6 +33,21 @@ export const FileDetails = ({ file }: { file: Models.Document }) => {
         <DetailRow label="Size:" value={convertFileSize(file.size)} />
         <DetailRow label="Owner:" value={file.owner.fullName} />
         <DetailRow label="Last edit:" value={formatDateTime(file.$updatedAt)} />
+        {file.tags && file.tags.length > 0 && (
+          <div className="flex flex-col gap-2">
+            <p className="subtitle-2 text-light-100">Tags:</p>
+            <div className="flex flex-wrap gap-2">
+              {file.tags.map((tag: string) => (
+                <span
+                  key={tag}
+                  className="px-3 py-1 text-xs bg-blue text-white rounded-full font-medium"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </>
   );

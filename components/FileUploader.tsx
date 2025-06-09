@@ -11,6 +11,8 @@ import { MAX_FILE_SIZE } from "@/constants";
 import { useToast } from "@/hooks/use-toast";
 import { uploadFile } from "@/lib/actions/file.action";
 import { usePathname } from "next/navigation";
+import { Input } from "@/components/ui/input";
+import PostUploadActionsModal from "@/components/PostUploadActionsModal";
 
 interface Props {
   ownerId: string;
@@ -22,6 +24,8 @@ const FileUploader = ({ ownerId, accountId, className }: Props) => {
   const path = usePathname();
   const { toast } = useToast();
   const [files, setFiles] = useState<File[]>([]);
+  const [showPostUploadModal, setShowPostUploadModal] = useState(false);
+  const [uploadedFileDetails, setUploadedFileDetails] = useState<any>(null);
 
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {
@@ -44,12 +48,19 @@ const FileUploader = ({ ownerId, accountId, className }: Props) => {
           });
         }
 
-        return uploadFile({ file, ownerId, accountId, path }).then(
+        return uploadFile({
+          file,
+          ownerId,
+          accountId,
+          path,
+        }).then(
           (uploadedFile) => {
             if (uploadedFile) {
               setFiles((prevFiles) =>
                 prevFiles.filter((f) => f.name !== file.name),
               );
+              setUploadedFileDetails(uploadedFile);
+              setShowPostUploadModal(true);
             }
           },
         );
@@ -70,18 +81,26 @@ const FileUploader = ({ ownerId, accountId, className }: Props) => {
     setFiles((prevFiles) => prevFiles.filter((file) => file.name !== fileName));
   };
 
+  const handleModalClose = () => {
+    setShowPostUploadModal(false);
+    setUploadedFileDetails(null);
+  };
+
   return (
-    <div {...getRootProps()} className="cursor-pointer">
-      <input {...getInputProps()} />
-      <Button type="button" className={cn("uploader-button", className)}>
-        <Image
-          src="/assets/icons/upload.svg"
-          alt="upload"
-          width={24}
-          height={24}
-        />{" "}
-        <p>Upload</p>
-      </Button>
+    <div className="flex flex-col gap-4">
+      <div {...getRootProps()} className="cursor-pointer">
+        <input {...getInputProps()} />
+        <Button type="button" className={cn("uploader-button", className)}>
+          <Image
+            src="/assets/icons/upload.svg"
+            alt="upload"
+            width={24}
+            height={24}
+          />{" "}
+          <p>Upload</p>
+        </Button>
+      </div>
+
       {files.length > 0 && (
         <ul className="uploader-preview-list">
           <h4 className="h4 text-light-100">Uploading</h4>
@@ -123,6 +142,14 @@ const FileUploader = ({ ownerId, accountId, className }: Props) => {
             );
           })}
         </ul>
+      )}
+
+      {showPostUploadModal && uploadedFileDetails && (
+        <PostUploadActionsModal
+          isOpen={showPostUploadModal}
+          onClose={handleModalClose}
+          file={uploadedFileDetails}
+        />
       )}
     </div>
   );
