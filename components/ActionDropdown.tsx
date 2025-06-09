@@ -78,7 +78,6 @@ const ActionDropdown = ({ file }: { file: Models.Document }) => {
 
     if (success) {
       closeAllModals();
-      router.refresh();
     }
 
     setIsLoading(false);

@@ -85,7 +85,6 @@ const FileUploader = ({ ownerId, accountId, className }: Props) => {
   const handleModalClose = () => {
     setShowPostUploadModal(false);
     setUploadedFileDetails(null);
-    router.refresh();
   };
 
   return (
